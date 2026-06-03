@@ -1,0 +1,16 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs / deps (in case tooling is ever added)
+node_modules/
+*.log
+
+# Local tooling / test artifacts
+skill-observations/
+.playwright-mcp/
+*.tmp
