@@ -282,7 +282,7 @@ body[data-layout="rail"] .dock-div { width: auto; height: 1px; }
 .tip-tc { margin-left: auto; font-size: 10.5px; color: var(--commits); font-weight: 600; white-space: nowrap; }
 
 /* ---------- audio control ---------- */
-#audio-ctrl { position: fixed; top: 12px; right: 14px; z-index: 50; }
+#audio-ctrl { position: fixed; top: 70px; right: 14px; z-index: 50; } /* below the 60px game HUD so it never covers the ≡ menu button */
 #audio-ctrl .ic-btn { width: 38px; height: 38px; border-radius: 7px; border: 1px solid var(--panel-edge); background: var(--panel); color: var(--muted); font-size: 16px; transition: .12s; }
 #audio-ctrl .ic-btn:hover { color: var(--text); border-color: var(--accent); }
 #audio-pop {
