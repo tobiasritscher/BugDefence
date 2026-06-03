@@ -2,6 +2,8 @@
 
 > A tower defence for the perpetually on-call.
 
+**▶ Play it live: [bugdefence.ritscher.ch](https://bugdefence.ritscher.ch)**
+
 Software bugs. Or actual creepy-crawlies. Nobody ever decides — because they're
 the same thing. A **Null Pointer** is a literal hole-faced beetle. A **Memory
 Leak** is a slug that grows fatter and slimier the longer it lives. Defend the
@@ -15,14 +17,17 @@ Just open it and play.
 
 ## ▶ Play
 
-Open `Bug Defence.html` in any modern browser.
+**Online:** [bugdefence.ritscher.ch](https://bugdefence.ritscher.ch)
 
-Or serve it locally (recommended — avoids `file://` quirks):
+**Locally:** serve the folder (recommended — avoids `file://` quirks) and open it:
 
 ```bash
 python3 -m http.server 8000
 # then visit http://localhost:8000/Bug%20Defence.html
 ```
+
+Opening `Bug Defence.html` directly via `file://` mostly works too, but a local
+server matches how it runs in production (entry served as `index.html`).
 
 ---
 
@@ -122,6 +127,25 @@ js/ui.js           — screens, HUD, dock, level select, roster, bestiary
 js/tweaks.js       — art-direction / layout tweak panel
 js/main.js         — boot + requestAnimationFrame loop
 ```
+
+---
+
+## 🚀 Deployment
+
+Hosted on **Cloudflare Pages** (free tier), auto-deployed on every push to `main`
+via GitHub Actions. The workflow copies the entry file to `index.html`, then
+`wrangler pages deploy`s the result.
+
+- **Live:** [bugdefence.ritscher.ch](https://bugdefence.ritscher.ch) · [bug-defence.pages.dev](https://bug-defence.pages.dev)
+- **Workflow:** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
+- **Full setup & how to reproduce it:** [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
+
+## 📚 Documentation
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — how the code is structured, the
+  game loop, data flow, and **how to add a new tower, bug, map, or spell**.
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — the Cloudflare Pages + GitHub
+  Actions pipeline, step by step (incl. the gotchas hit while setting it up).
 
 ---
 
