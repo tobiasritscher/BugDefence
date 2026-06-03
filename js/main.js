@@ -14,6 +14,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     TWEAKS.init();
     UI.init();
+    AUDIO.init();
     requestAnimationFrame(loop);
   });
 })();
