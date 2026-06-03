@@ -19,7 +19,7 @@ const AUDIO = (() => {
 
   // ---------- state ----------
   let ctx = null, master, musicGain, sfxGain;
-  let audioEl = null, playlist = [], trackIdx = 0, musicStarted = false, unlocked = false;
+  let audioEl = null, playlist = [], trackIdx = 0, musicStarted = false, unlocked = false, errorCount = 0;
   let voices = 0;
   const lastPlay = {};
   let st = { ...DEFAULTS };
@@ -57,7 +57,8 @@ const AUDIO = (() => {
     audioEl = new Audio();
     audioEl.preload = 'auto';
     audioEl.addEventListener('ended', nextTrack);
-    audioEl.addEventListener('error', () => { if (playlist.length) nextTrack(); }); // skip broken/missing track
+    audioEl.addEventListener('playing', () => { errorCount = 0; });
+    audioEl.addEventListener('error', () => { if (++errorCount >= playlist.length) return; nextTrack(); }); // skip broken track; give up once all have failed
     try { ctx.createMediaElementSource(audioEl).connect(musicGain); } catch (e) {}
   }
   function startMusic() {
@@ -125,7 +126,7 @@ const AUDIO = (() => {
     if (now - last < (THROTTLE[key] || 0)) return false;
     lastPlay[key] = now; return true;
   }
-  function seq(freqs, gap, dur, opt) { freqs.forEach((f, i) => setTimeout(() => tone(f, dur, opt), i * gap)); }
+  function seq(freqs, gap, dur, opt) { freqs.forEach((f, i) => setTimeout(() => { if (voices < MAX_VOICES) tone(f, dur, opt); }, i * gap)); }
 
   // ---------- sfx catalog ----------
   function play(name) {
