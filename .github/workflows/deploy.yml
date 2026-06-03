@@ -28,12 +28,12 @@ jobs:
           cp "Bug Defence.html" dist/index.html
           cp -r css js dist/
 
+      # Project must already exist (created once locally via `wrangler login`,
+      # see README/setup). The CI token only needs to deploy into it.
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           npm i -g wrangler@3
-          # create the project on first run; ignore the error if it already exists
-          wrangler pages project create bug-defence --production-branch=main || true
           wrangler pages deploy dist --project-name=bug-defence --branch=main --commit-dirty=true
