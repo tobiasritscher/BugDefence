@@ -1,0 +1,36 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # allows manual runs from the Actions tab
+
+# Only keep the newest deploy running; cancel superseded ones.
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Assemble a clean web root: the entry file becomes index.html so the
+      # game loads at the domain root (no space-in-filename URL).
+      - name: Assemble site
+        run: |
+          mkdir -p dist
+          cp "Bug Defence.html" dist/index.html
+          cp -r css js dist/
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=bug-defence --branch=main
