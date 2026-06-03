@@ -13,4 +13,6 @@ node_modules/
 # Local tooling / test artifacts
 skill-observations/
 .playwright-mcp/
+.wrangler/
+dist/
 *.tmp
