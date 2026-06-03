@@ -19,9 +19,9 @@ const GAME = (() => {
   };
   let nextId = 1;
 
-  const cb = {}; // ui callbacks: onSprintComplete, onGameOver, onChange, hit
-  function on(name, fn) { cb[name] = fn; }
-  function emit(name, ...a) { if (cb[name]) cb[name](...a); }
+  const cb = {}; // ui/audio listeners (arrays): onSprintComplete, onGameOver, onChange, hit, fire, kill, shield, place, upgrade, sell, cast, sprintStart
+  function on(name, fn) { (cb[name] || (cb[name] = [])).push(fn); }
+  function emit(name, ...a) { const l = cb[name]; if (l) for (const fn of l) fn(...a); }
 
   // ---------- lifecycle ----------
   function loadMap(i) { S.mapIndex = i; setMap(i); }
@@ -51,7 +51,7 @@ const GAME = (() => {
     if (S.waveActive) return;
     S.spawnQ = buildSpawnQueue(S.sprint);
     S.waveTime = 0; S.spawnedTotal = 0; S.waveActive = true;
-    emit('onChange');
+    emit('onChange'); emit('sprintStart');
   }
 
   function nextSprint() {
@@ -119,7 +119,7 @@ const GAME = (() => {
     if (e.shield > 0) {
       const soak = Math.min(e.shield, dmg);
       e.shield -= soak; dmg -= soak;
-      if (e.shield <= 0) S.effects.push({ kind: 'ring', x: e.x, y: e.y, r: e.r + 8, life: 0.3, max: 0.3, col: '#7dcfff' });
+      if (e.shield <= 0) { S.effects.push({ kind: 'ring', x: e.x, y: e.y, r: e.r + 8, life: 0.3, max: 0.3, col: '#7dcfff' }); emit('shield'); }
     }
     if (dmg <= 0) return;
     e.hp -= dmg;
@@ -155,6 +155,7 @@ const GAME = (() => {
         c.baseSpeed = e.baseSpeed * 1.12; c.speed = c.baseSpeed;
       }
     }
+    emit('kill', e);
   }
 
   // ---------- movement ----------
@@ -197,7 +198,7 @@ const GAME = (() => {
     S.commits -= def.cost;
     const ctr = cellCenter(col, row);
     S.towers.push({ id: nextId++, type, def, col, row, x: ctr.x, y: ctr.y, lvl: 0, cd: 0, ang: -Math.PI / 2, invested: def.cost });
-    emit('onChange');
+    emit('onChange'); emit('place');
     return true;
   }
   function canBuild(col, row) {
@@ -214,7 +215,7 @@ const GAME = (() => {
     if (t.lvl >= 2) return false;
     const cost = t.def.levels[t.lvl + 1].upCost;
     if (S.commits < cost) return false;
-    S.commits -= cost; t.invested += cost; t.lvl++; emit('onChange'); return true;
+    S.commits -= cost; t.invested += cost; t.lvl++; emit('onChange'); emit('upgrade'); return true;
   }
   function sell(t) {
     const refund = Math.round(t.invested * 0.7);
@@ -222,7 +223,7 @@ const GAME = (() => {
     S.towers = S.towers.filter(x => x !== t);
     if (S.selected === t) S.selected = null;
     S.floaters.push({ x: t.x, y: t.y, text: '+' + refund, life: 0.9, max: 0.9, col: THEME.commits });
-    emit('onChange');
+    emit('onChange'); emit('sell');
   }
 
   function targetable(e, allowCloak) {
@@ -255,7 +256,7 @@ const GAME = (() => {
           for (const e of S.enemies) if (targetable(e, true) && inRange(t, e, L.range) && e.hp / e.maxHp <= L.threshold && !e.def.boss) {
             kill(e); S.commits += L.refund; swept = true;
           }
-          if (swept) S.effects.push({ kind: 'ring', x: t.x, y: t.y, r: L.range, life: 0.4, max: 0.4, col: '#9ece6a' });
+          if (swept) { S.effects.push({ kind: 'ring', x: t.x, y: t.y, r: L.range, life: 0.4, max: 0.4, col: '#9ece6a' }); emit('fire', 'gc'); }
         }
         continue;
       }
@@ -263,7 +264,7 @@ const GAME = (() => {
         if (t.cd <= 0) {
           t.cd = L.rate; let hit = false;
           for (const e of S.enemies) if (targetable(e, true) && inRange(t, e, L.range)) { damage(e, L.dmg, 'burn'); e.burnT = 1.2; e.burnDps = L.burn; hit = true; }
-          if (hit) S.effects.push({ kind: 'ring', x: t.x, y: t.y, r: L.range, life: 0.3, max: 0.3, col: '#ff9e64' });
+          if (hit) { S.effects.push({ kind: 'ring', x: t.x, y: t.y, r: L.range, life: 0.3, max: 0.3, col: '#ff9e64' }); emit('fire', 'burn'); }
         }
         continue;
       }
@@ -276,12 +277,14 @@ const GAME = (() => {
         // instant splash slap around tower
         S.effects.push({ kind: 'slap', x: t.x, y: t.y, r: L.splash, life: 0.22, max: 0.22, col: '#fff' });
         for (const e of S.enemies) if (targetable(e, true) && Math.hypot(e.x - t.x, e.y - t.y) <= L.splash) damage(e, L.dmg, 'melee');
+        emit('fire', 'melee');
       } else {
         const ang = t.ang;
         const proj = { id: nextId++, x: t.x, y: t.y - 8, vx: Math.cos(ang) * L.proj, vy: Math.sin(ang) * L.proj, dmg: L.dmg, kind: k, life: 1.4, color: projColor(k) };
         if (k === 'pierce') { proj.pierce = L.pierce; proj.hits = new Set(); proj.life = 1.0; }
         if (k === 'sniper') { proj.target = tgt; proj.stun = L.stun; proj.life = 1.0; }
         S.projectiles.push(proj);
+        emit('fire', k);
       }
     }
   }
@@ -333,7 +336,7 @@ const GAME = (() => {
       S.effects.push({ kind: 'cloud', x, y, r: sp.radius, life: sp.dur, max: sp.dur, col: '#9ece6a' });
       for (const e of S.enemies) if (targetable(e, true) && Math.hypot(e.x - x, e.y - y) <= sp.radius) e.poison = { t: sp.dur, dps: sp.dps };
     }
-    S.castSpell = null; emit('onChange'); return true;
+    S.castSpell = null; emit('cast', name); emit('onChange'); return true;
   }
 
   // ---------- effects/floaters ----------

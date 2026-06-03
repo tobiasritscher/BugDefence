@@ -154,3 +154,12 @@ via GitHub Actions. The workflow copies the entry file to `index.html`, then
 [MIT](LICENSE) © 2026 Tobias Ritscher
 
 🤖 Built with [Claude Code](https://claude.com/claude-code)
+
+## Audio
+
+Sound effects are synthesized at runtime via the Web Audio API (no asset files).
+Background music is played from `music/` — drop in `.mp3` files there. The current
+tracks are referenced in `js/audio.js` (`MUSIC_FILES`); on each game start the list
+is shuffled and looped. A mute toggle and Musik/SFX volume sliders live in the
+fixed top-right control on every screen, and the settings persist via `localStorage`.
+To swap tracks, replace the files in `music/` and update the `MUSIC_FILES` array.

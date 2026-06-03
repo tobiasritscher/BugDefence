@@ -280,3 +280,17 @@ body[data-layout="rail"] .dock-div { width: auto; height: 1px; }
 .tip-tn { font-size: 11px; font-weight: 600; }
 .tip-ts { font-size: 9.5px; color: var(--muted); margin-top: 1px; }
 .tip-tc { margin-left: auto; font-size: 10.5px; color: var(--commits); font-weight: 600; white-space: nowrap; }
+
+/* ---------- audio control ---------- */
+#audio-ctrl { position: fixed; top: 70px; right: 14px; z-index: 50; } /* below the 60px game HUD so it never covers the ≡ menu button */
+#audio-ctrl .ic-btn { width: 38px; height: 38px; border-radius: 7px; border: 1px solid var(--panel-edge); background: var(--panel); color: var(--muted); font-size: 16px; transition: .12s; }
+#audio-ctrl .ic-btn:hover { color: var(--text); border-color: var(--accent); }
+#audio-pop {
+  position: absolute; top: 46px; right: 0; display: none; flex-direction: column; gap: 12px;
+  width: 188px; padding: 14px; background: var(--panel); border: 1px solid var(--panel-edge);
+  border-radius: var(--r); box-shadow: 0 18px 50px -18px #000;
+}
+#audio-pop.on { display: flex; }
+#audio-pop label { display: flex; flex-direction: column; gap: 6px; font-size: 10px; letter-spacing: .14em; color: var(--muted); font-weight: 700; }
+#audio-pop input[type=range] { width: 100%; accent-color: var(--health); cursor: pointer; }
+#audio-pop #audio-mute { width: 100%; padding: 8px; font-size: 12px; font-weight: 600; }
