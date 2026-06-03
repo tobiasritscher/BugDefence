@@ -339,8 +339,8 @@ const START_UPTIME = 100;
 
 // Late sprints spawn MORE bugs (not just tankier ones) so concentrated late-game
 // DPS gets overwhelmed. Kicks in only after sprint 5 — early waves stay as-authored.
-// sprint idx 0-5: ×1.0 · sprint 8: ×1.24 · sprint 11: ×1.48
-function waveCountMult(idx) { return 1 + Math.max(0, idx - 5) * 0.08; }
+// sprint idx 0-5: ×1.0 · sprint 8: ×1.36 · sprint 11: ×1.72
+function waveCountMult(idx) { return 1 + Math.max(0, idx - 5) * 0.12; }
 
 // ---- Spells -----------------------------------------------------------------
 const SPELLS = {
