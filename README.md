@@ -2,7 +2,7 @@
 
 > A tower defence for the perpetually on-call.
 
-**▶ Play it live: [bugdefence.ritscher.ch](https://bugdefence.ritscher.ch)**
+**▶ Play it live: [ritscher.ch](https://ritscher.ch)**
 
 Software bugs. Or actual creepy-crawlies. Nobody ever decides — because they're
 the same thing. A **Null Pointer** is a literal hole-faced beetle. A **Memory
@@ -17,7 +17,7 @@ Just open it and play.
 
 ## ▶ Play
 
-**Online:** [bugdefence.ritscher.ch](https://bugdefence.ritscher.ch)
+**Online:** [ritscher.ch](https://ritscher.ch)
 
 **Locally:** serve the folder (recommended — avoids `file://` quirks) and open it:
 
@@ -136,7 +136,7 @@ Hosted on **Cloudflare Pages** (free tier), auto-deployed on every push to `main
 via GitHub Actions. The workflow copies the entry file to `index.html`, then
 `wrangler pages deploy`s the result.
 
-- **Live:** [bugdefence.ritscher.ch](https://bugdefence.ritscher.ch) · [bug-defence.pages.dev](https://bug-defence.pages.dev)
+- **Live:** [ritscher.ch](https://ritscher.ch) · [bug-defence.pages.dev](https://bug-defence.pages.dev)
 - **Workflow:** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
 - **Full setup & how to reproduce it:** [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
 

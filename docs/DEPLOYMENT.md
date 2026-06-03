@@ -4,7 +4,7 @@ Bug Defence is a static site, hosted on **Cloudflare Pages** and auto-deployed
 on every push to `main` via **GitHub Actions**. Total cost: **€0** (Pages free
 tier + unlimited Actions minutes on a public repo).
 
-- **Production:** <https://bugdefence.ritscher.ch>
+- **Production:** <https://ritscher.ch>
 - **Pages default:** <https://bug-defence.pages.dev>
 - **Pages project:** `bug-defence` (production branch `main`)
 - **Workflow:** [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml)
@@ -98,8 +98,9 @@ gh run rerun --failed     # if an earlier run failed before secrets/project exis
 
 ### 6. Custom domain
 Dashboard → **Workers & Pages → bug-defence → Custom domains → Set up a domain**
-→ `bugdefence.ritscher.ch`. Since `ritscher.ch` is already on Cloudflare, the
-CNAME is created automatically and SSL provisions in ~1 minute.
+→ `ritscher.ch` (the apex; or a subdomain like `bugdefence.ritscher.ch`). Since
+`ritscher.ch` is already on Cloudflare, the DNS record is created automatically
+and SSL provisions in ~1 minute.
 
 ---
 
@@ -108,7 +109,7 @@ CNAME is created automatically and SSL provisions in ~1 minute.
 - **Deploy:** just `git push` to `main`. Done.
 - **Manual deploy:** Actions tab → *Deploy to Cloudflare Pages* → *Run workflow*.
 - **Check status:** `gh run list --limit 1` / `gh run watch <id>`.
-- **Verify live:** `curl -sI https://bugdefence.ritscher.ch` (expect `200`).
+- **Verify live:** `curl -sI https://ritscher.ch` (expect `200`).
 - **Rollback:** Cloudflare dashboard → project → *Deployments* → pick a previous
   deployment → *Rollback*. (Or revert the commit and push.)
 
