@@ -65,8 +65,9 @@ const GAME = (() => {
   // Ramp is quadratic so early sprints stay gentle while late sprints spike hard
   // (player power + the sprint bonus compound, so enemy HP must accelerate to
   // out-pace the richer late economy or the back half goes trivial).
-  // sprint 0: ×1.0 · sprint 4: ×1.31 · sprint 7: ×1.88 · sprint 9: ×2.42 · sprint 11: ×3.09
-  function hpMult() { return DIFFICULTY * (1 + S.sprint * 0.014 + S.sprint * S.sprint * 0.016); }
+  // A late surge (from sprint 6, via `late`) sharpens the back half so a maxed board stops coasting.
+  // sprint 0: ×1.0 · sprint 5: ×1.47 · sprint 7: ×2.04 · sprint 9: ×3.06 · sprint 11: ×4.53
+  function hpMult() { const late = Math.max(0, S.sprint - 5); return DIFFICULTY * (1 + S.sprint * 0.014 + S.sprint * S.sprint * 0.016 + late * late * 0.040); }
   function spdMult() { return 1 + (DIFFICULTY - 1) * 0.45; }
   // Commits awarded for clearing a sprint — scales, but kept modest so it eases
   // the harder late waves without letting the player snowball past them.
@@ -83,7 +84,7 @@ const GAME = (() => {
       revived: false, isSplit: false
     };
     // bosses scale more gently so they stay killable but still threatening
-    e.maxHp = def.hp * (def.boss ? (1 + (DIFFICULTY - 1) + S.sprint * 0.04) : m);
+    e.maxHp = def.hp * (def.boss ? (1 + (DIFFICULTY - 1) + S.sprint * 0.06) : m);
     e.hp = e.maxHp;
     e.baseSpeed = def.speed * spdMult();
     e.speed = e.baseSpeed;
