@@ -15,14 +15,15 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; }
+html, body { margin: 0; height: 100%; overscroll-behavior: none; }
 body {
   background: var(--bg); color: var(--text);
   font-family: var(--mono); font-size: 14px;
   overflow: hidden; -webkit-font-smoothing: antialiased;
   transition: background .4s ease;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
-button { font-family: var(--mono); cursor: pointer; color: inherit; }
+button { font-family: var(--mono); cursor: pointer; color: inherit; touch-action: manipulation; }
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-thumb { background: var(--panel-edge); border-radius: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -73,7 +74,9 @@ button { font-family: var(--mono); cursor: pointer; color: inherit; }
    ============================================================ */
 #screen-game { background: var(--bg); }
 #hud-top {
-  display: flex; align-items: center; gap: 20px; padding: 0 18px; height: 60px;
+  display: flex; align-items: center; gap: 20px; height: 60px;
+  padding: 0 calc(18px + env(safe-area-inset-right)) 0 calc(18px + env(safe-area-inset-left));
+  margin-top: env(safe-area-inset-top);
   background: var(--panel); border-bottom: 1px solid var(--panel-edge); z-index: 5; flex: 0 0 auto;
 }
 .hud-brand { font-family: var(--disp); font-weight: 700; font-size: 17px; letter-spacing: .02em; display: flex; align-items: center; gap: 9px; white-space: nowrap; }
@@ -99,10 +102,28 @@ button { font-family: var(--mono); cursor: pointer; color: inherit; }
 
 #board-area { flex: 1; display: flex; min-height: 0; position: relative; }
 #board-wrap { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; min-width: 0; padding: 12px; position: relative; }
-#board { background: var(--bg); border: 1px solid var(--panel-edge); border-radius: 6px; box-shadow: 0 0 0 1px #0006, 0 20px 60px -20px #000; cursor: crosshair; }
+#board { background: var(--bg); border: 1px solid var(--panel-edge); border-radius: 6px; box-shadow: 0 0 0 1px #0006, 0 20px 60px -20px #000; cursor: crosshair; touch-action: none; -webkit-touch-callout: none; }
+#screen-game { user-select: none; -webkit-user-select: none; }
+
+/* rotate hint (small phones in portrait, non-blocking, fades out) */
+#rotate-hint {
+  display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  z-index: 7; pointer-events: none; white-space: nowrap;
+  max-width: calc(100% - 120px); overflow: hidden; text-overflow: ellipsis;
+  background: color-mix(in srgb, var(--panel) 92%, #000); border: 1px solid var(--panel-edge);
+  border-radius: 20px; padding: 7px 14px; font-size: 11px; color: var(--muted);
+}
+@media (orientation: portrait) and (pointer: coarse) and (max-width: 700px) {
+  #rotate-hint { display: block; animation: rotate-hint-fade 6s ease forwards; }
+}
+@keyframes rotate-hint-fade { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
 
 /* dock */
-#dock { background: var(--panel); border-top: 1px solid var(--panel-edge); display: flex; align-items: stretch; gap: 14px; padding: 12px 16px; flex: 0 0 auto; z-index: 4; }
+#dock {
+  background: var(--panel); border-top: 1px solid var(--panel-edge); display: flex; align-items: stretch; gap: 14px;
+  padding: 12px calc(16px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+  flex: 0 0 auto; z-index: 4;
+}
 #palette { display: flex; gap: 8px; }
 .tw-card {
   position: relative; width: 74px; border: 1px solid var(--panel-edge); background: #0004;
@@ -189,7 +210,7 @@ body[data-layout="rail"] .dock-div { width: auto; height: 1px; }
 .back-btn:hover { border-color: var(--accent); }
 .page-hd h1 { font-family: var(--disp); font-size: 26px; margin: 0; letter-spacing: -.01em; }
 .page-hd .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
-.grid { max-width: 1180px; margin: 28px auto 0; padding: 0 40px; display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+.grid { max-width: 1180px; margin: 28px auto 0; padding: 0 40px; display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); }
 
 .rcard, .bcard { background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 12px; padding: 16px; }
 .rcard-hd, .bcard-hd { display: flex; gap: 12px; align-items: center; }
@@ -294,3 +315,82 @@ body[data-layout="rail"] .dock-div { width: auto; height: 1px; }
 #audio-pop label { display: flex; flex-direction: column; gap: 6px; font-size: 10px; letter-spacing: .14em; color: var(--muted); font-weight: 700; }
 #audio-pop input[type=range] { width: 100%; accent-color: var(--health); cursor: pointer; }
 #audio-pop #audio-mute { width: 100%; padding: 8px; font-size: 12px; font-weight: 600; }
+
+/* ============================================================
+   MOBILE / TOUCH
+   ============================================================ */
+
+/* touch devices: keyboard hints are meaningless, hover tooltips don't exist */
+.menu-foot .hint-touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .menu-foot .hint-desktop { display: none; }
+  .menu-foot .hint-touch { display: inline; }
+  .tw-key, .sp-key { display: none; }
+  .menu-btns button, .lplay, .back-btn { min-height: 44px; }
+}
+
+/* narrow windows: the full-width dock (~1000px) no longer fits — wrap it.
+   Palette scrolls on its own row, spells + run button below. */
+@media (max-width: 1080px) {
+  body[data-layout] #dock {
+    flex-direction: row; flex-wrap: wrap; align-items: stretch; gap: 8px; width: auto; flex: 0 0 auto;
+    border-left: none; border-top: 1px solid var(--panel-edge); overflow: visible;
+    padding: 8px calc(10px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));
+  }
+  body[data-layout] .dock-div { display: none; }
+  body[data-layout] #palette { order: 1; flex: 1 1 100%; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; padding-bottom: 2px; }
+  .tw-card { width: 66px; flex: 0 0 auto; }
+  .tw-card:hover, .menu-btns button:hover, .lcard:hover, #run-btn:hover { transform: none; }
+  body[data-layout] #spells { order: 2; flex: 1 1 auto; min-width: 0; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; }
+  .sp-card { width: 76px; flex: 0 0 auto; }
+  body[data-layout] #runbar { order: 3; margin-left: auto; min-width: 0; align-items: stretch; justify-content: center; }
+  #run-hint { display: none; }
+  #run-btn { padding: 11px 16px; font-size: 13px; white-space: nowrap; }
+  #board-wrap { padding: 6px; }
+}
+
+/* small screens (phones, portrait): compact HUD, full-width panels */
+@media (max-width: 820px) {
+  #hud-top { height: auto; min-height: 48px; flex-wrap: wrap; gap: 6px 12px; padding-top: 7px; padding-bottom: 7px;
+    padding-left: calc(10px + env(safe-area-inset-left)); padding-right: calc(10px + env(safe-area-inset-right)); }
+  .hud-brand { display: none; }
+  .hud-stat { min-width: 56px; }
+  .hud-stat.grow { flex: 1 1 90px; max-width: none; }
+  .hud-bar { width: 64px; }
+  .hud-v.big { font-size: 15px; }
+  .ic-btn { width: 40px; height: 40px; }
+  #audio-ctrl { top: calc(env(safe-area-inset-top, 0px) + 104px); }
+
+  /* selection panel: centered above the dock, clear of fat fingers */
+  #sel-panel { left: 10px; right: 10px; bottom: 8px; width: auto; max-width: 320px; margin: 0 auto; }
+  .sel-btns button { padding: 13px 8px; }
+
+  /* overlays + pages */
+  .ov-card, .ov-card.big { width: min(440px, calc(100vw - 28px)); padding: 20px; }
+  .page-hd { padding: 12px calc(16px + env(safe-area-inset-right)) 12px calc(16px + env(safe-area-inset-left)); gap: 12px; }
+  .page-hd h1 { font-size: 20px; }
+  .grid { padding: 0 16px; margin-top: 18px; }
+  .menu-inner { padding: 16px; }
+  .menu-btns { margin-top: 26px; }
+  .menu-btns button { padding: 13px 20px; }
+  #tweaks { right: 8px; bottom: 8px; width: min(250px, calc(100vw - 16px)); }
+}
+
+/* short screens (phones, landscape): one scrollable dock row so the board
+   keeps most of the height; the run button stays pinned on the right */
+@media (max-height: 520px) {
+  body[data-layout] #dock { flex-wrap: nowrap; overflow-x: auto; gap: 8px; padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+  body[data-layout] #palette { order: 1; flex: 0 0 auto; overflow: visible; padding-bottom: 0; }
+  body[data-layout] #spells { order: 2; flex: 0 0 auto; overflow: visible; }
+  body[data-layout] #runbar { order: 3; position: sticky; right: 0; margin-left: auto; background: var(--panel); box-shadow: -10px 0 14px -8px #000a; padding-left: 8px; }
+  .tw-card { width: 58px; }
+  .tw-card canvas { width: 36px !important; height: 36px !important; }
+  .sp-card { width: auto; min-width: 64px; padding: 5px 8px; }
+  .sp-card canvas { width: 30px !important; height: 30px !important; }
+  .sp-name { font-size: 10px; }
+  .sp-cost { display: none; }
+  #run-btn { padding: 10px 14px; }
+  #hud-top { min-height: 44px; padding-top: 4px; padding-bottom: 4px; }
+  #audio-ctrl { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 108px); right: 8px; }
+  #sel-panel { left: auto; right: 10px; bottom: 8px; margin: 0; max-width: 240px; }
+}

@@ -6,6 +6,7 @@
 
 const UI = (() => {
   let canvas, ctx, boardWrap, scale = 1;
+  const canHover = () => window.matchMedia('(hover: hover)').matches;
   const $ = s => document.querySelector(s);
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 
@@ -79,7 +80,7 @@ const UI = (() => {
       card.appendChild(el('div', 'tw-cost', '◆ ' + def.cost));
       card.appendChild(el('div', 'tw-key', (i + 1) + ''));
       card.onclick = () => selectPlacing(type);
-      card.onmouseenter = () => showTowerTip(type, card);
+      card.onmouseenter = () => { if (canHover()) showTowerTip(type, card); };
       card.onmouseleave = hideTip;
       pal.appendChild(card);
     });
@@ -95,7 +96,7 @@ const UI = (() => {
       b.appendChild(el('div', 'sp-cost', '◆ ' + s.cost));
       const cd = el('div', 'sp-cd'); cd.appendChild(el('span')); b.appendChild(cd);
       b.onclick = () => selectSpell(name);
-      b.onmouseenter = () => showSpellTip(name, b);
+      b.onmouseenter = () => { if (canHover()) showSpellTip(name, b); };
       b.onmouseleave = hideTip;
       sp.appendChild(b);
     });
@@ -244,15 +245,38 @@ const UI = (() => {
   function waveTotal(idx) { const m = waveCountMult(idx); return WAVES[idx].groups.reduce((a, g) => a + Math.round(g.count * m) * (ENEMIES[g.type].pairs || ENEMIES[g.type].linked ? 2 : 1), 0); }
 
   // ---------- input ----------
+  // Pointer events cover mouse AND touch: touch-drag shows the placement ghost,
+  // release places. Long-press on the board (touch) cancels, like right-click.
   function bindCanvas() {
-    canvas.addEventListener('mousemove', e => { GAME.S.hover = evtPos(e); });
-    canvas.addEventListener('mouseleave', () => { GAME.S.hover = null; });
-    canvas.addEventListener('click', e => {
+    const isTouch = e => e.pointerType !== 'mouse';
+    let pressTimer = null, longPressed = false, downAt = null;
+    const clearPress = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
+
+    canvas.addEventListener('pointerdown', e => {
+      if (!isTouch(e) && e.button !== 0) return;
+      if (isTouch(e)) e.preventDefault();
+      canvas.setPointerCapture(e.pointerId);
+      GAME.S.hover = evtPos(e);
+      downAt = { x: e.clientX, y: e.clientY };
+      longPressed = false;
+      if (isTouch(e)) pressTimer = setTimeout(() => { longPressed = true; GAME.S.hover = null; cancelAll(); }, 500);
+    });
+    canvas.addEventListener('pointermove', e => {
+      GAME.S.hover = evtPos(e);
+      if (downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 12) clearPress();
+    });
+    canvas.addEventListener('pointerup', e => {
+      clearPress();
+      const wasDown = downAt !== null; downAt = null;
+      if (isTouch(e)) GAME.S.hover = null;
+      if (!wasDown || longPressed || (!isTouch(e) && e.button !== 0)) return;
       const p = evtPos(e); const S = GAME.S;
       if (S.placing) { if (GAME.place(S.placing, p.x, p.y)) { if (GAME.S.commits < TOWERS[S.placing].cost) S.placing = null; } syncDock(); return; }
       if (S.castSpell) { GAME.cast(S.castSpell, p.x, p.y); syncDock(); return; }
       const t = GAME.towerAt(p.x, p.y); S.selected = t || null; renderSelection();
     });
+    canvas.addEventListener('pointercancel', () => { clearPress(); downAt = null; GAME.S.hover = null; });
+    canvas.addEventListener('pointerleave', () => { if (!downAt) GAME.S.hover = null; });
     canvas.addEventListener('contextmenu', e => { e.preventDefault(); cancelAll(); });
   }
   function cancelAll() { GAME.S.placing = null; GAME.S.castSpell = null; GAME.S.selected = null; syncDock(); }
@@ -410,11 +434,16 @@ const UI = (() => {
 
   function init() {
     canvas = $('#board'); ctx = canvas.getContext('2d');
-    canvas.width = BOARD_W; canvas.height = BOARD_H;
+    // render at device resolution (capped at 2x) so the board stays crisp on phones
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = BOARD_W * dpr; canvas.height = BOARD_H * dpr;
+    ctx.scale(dpr, dpr);
     boardWrap = $('#board-wrap');
     buildHUD(); buildDock(); buildRunBar(); buildRoster(); buildBestiary(); buildLevels();
     bindCanvas(); bindKeys();
     window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', () => setTimeout(resize, 120));
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', resize);
     // menu buttons
     $('#m-play').onclick = () => show('levels');
     $('#m-roster').onclick = () => show('roster');

@@ -56,6 +56,18 @@ Survive all **12 sprints** — the last one is the **Release Deadline**.
 | Click a placed tower | Open its panel to **upgrade** or **sell** |
 | Hover a tower in the dock | See its full stats & upgrade tree |
 
+### Touch (phones & tablets)
+
+The game is fully playable on touch devices — the layout adapts to portrait
+and landscape, and the board scales to fit:
+
+| Gesture | Action |
+| --- | --- |
+| Tap a tool, then tap the board | Place a tower (drag on the board to preview first) |
+| Tap a spell, then tap the board | Cast it there |
+| Tap a placed tower | Open its panel to **upgrade** or **sell** |
+| Long-press the board | Cancel placement / selection |
+
 ---
 
 ## 🗺️ Maps
